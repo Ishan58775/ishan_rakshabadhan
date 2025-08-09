@@ -1,0 +1,373 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Raksha Bandhan - Interactive Journey</title>
+<style>
+  /* --- page layout --- */
+  :root{
+    --gold:#ffd700;
+    --deep:#8b0000;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;background: radial-gradient(circle at 20% 20%, #fff2b8, #ffd700 10%, #b86d0a 40%, #6b0000 100%);overflow:hidden;color:#111}
+  .page{position:absolute;inset:0;display:flex;align-items:center;justify-content:center}
+  .hidden{display:none}
+
+  /* --- curtains --- */
+  .curtain{position:fixed;top:0;width:50%;height:100%;background-size:cover;background-position:center;z-index:40;transition:transform 1.6s ease-in-out}
+  .curtain.left{left:0;background-image:url('https://img.freepik.com/premium-photo/red-curtain-ideal-backgrounds-textures_190619-1391.jpg?semt=ais_hybrid&w=740&q=80')}
+  .curtain.right{right:0;background-image:url('https://img.freepik.com/premium-photo/red-curtain-ideal-backgrounds-textures_190619-1391.jpg?semt=ais_hybrid&w=740&q=80')}
+  .curtain.open.left{transform:translateX(-110%)}
+  .curtain.open.right{transform:translateX(110%)}
+
+  /* --- invitation card (page1) --- */
+  .card{background:linear-gradient(145deg,var(--gold),#e0b44a);padding:28px;border-radius:14px;box-shadow:0 100px 400px rgba(0,0,0,0.4), 0 0 25px rgba(255,215,0,0.25);text-align:center;z-index:50}
+  .card h2{margin:0 0 10px;font-size:22px}
+  .card input{padding:10px 12px;width:240px;border-radius:8px;border:2px solid rgba(0,0,0,0.1);font-size:16px;outline:none}
+  .card button{margin-top:12px;padding:10px 18px;border-radius:8px;background:#8b0000;color:#fff;border:none;font-weight:600;cursor:pointer}
+  .card button:hover{transform:translateY(-2px)}
+  .error{margin-top:12px;display:none;padding:8px 12px;border-radius:10px;border:2px solid #d4af37;background:rgba(218,165,32,0.07);color:#111;font-weight:700;box-shadow:0 2px 6px rgba(0,0,0,0.25),0 0 12px rgba(212,175,55,0.2)}
+
+  /* --- envelope & poem (page2) --- */
+  .envelope{width:300px;height:200px;border-radius:10px;background:linear-gradient(135deg,#f6d56b,#e0b44a);box-shadow:0 10px 30px rgba(0,0,0,0.35), inset 0 -6px 18px rgba(0,0,0,0.12);display:flex;align-items:center;justify-content:center;cursor:pointer}
+  .envelope:hover{transform:translateY(-6px);transition:transform .3s ease}
+  .poemBox{max-width:420px;background:#fff8e6;padding:18px;border-radius:12px;border:2px solid #d4af37;box-shadow:0 10px 30px rgba(0,0,0,0.25);text-align:center}
+
+  /* --- game area (page3) --- */
+  .game-wrap{width:100%;height:72vh;display:flex;align-items:center;justify-content:center;flex-direction:column}
+  .game-area{width:90%;max-width:900px;height:52vh;background:linear-gradient(180deg,rgba(255,255,255,0.06),rgba(255,255,255,0.02));border-radius:14px;position:relative;overflow:hidden;box-shadow:0 10px 30px rgba(0,0,0,0.35);border:2px solid rgba(255,215,0,0.12)}
+  .status{display:flex;gap:18px;align-items:center;margin-bottom:12px;color:#fff;text-shadow:0 1px 2px rgba(0,0,0,0.5);font-weight:700}
+  .meter{height:10px;width:220px;background:rgba(255,255,255,0.12);border-radius:6px;overflow:hidden}
+  .meter > i{display:block;height:100%;background:linear-gradient(90deg,#ffec99,#ffd700);width:0%}
+  .statBox{}
+
+  .rakhi{position:absolute;font-size:36px;cursor:pointer;user-select:none;will-change:transform,opacity;filter:drop-shadow(0 4px 6px rgba(0,0,0,0.35))}
+  @keyframes fallDown{from{transform:translateY(-20vh)}to{transform:translateY(120vh)}}
+  .messageSmall{color:#fff;font-weight:700}
+  .centerBtn{margin-top:14px;padding:8px 14px;border-radius:8px;background:#8b0000;color:#fff;border:none;font-weight:700;cursor:pointer}
+
+  /* --- final reveal (page4) --- */
+  .finalCard{background:linear-gradient(135deg,rgba(0,0,0,0.25),rgba(0,0,0,0.35));padding:28px;border-radius:14px;color:#fff;text-align:center;box-shadow:0 10px 40px rgba(0,0,0,0.6)}
+  .finalTitle{font-size:28px;font-weight:800;margin-bottom:8px;text-shadow:0 3px 12px rgba(255,215,0,0.35)}
+  .finalText{font-size:18px;margin-bottom:12px}
+  .fromIshan{display:inline-block;margin-top:8px;padding:8px 14px;border-radius:10px;background:linear-gradient(90deg,#b8860b,#ffd700);color:#2b1a00;font-weight:900;font-size:18px;box-shadow:0 6px 18px rgba(184,134,11,0.35);border:2px solid rgba(255,255,255,0.06)}
+
+  /* confetti */
+  .confetti{position:absolute;inset:0;pointer-events:none;overflow:hidden}
+  .confetti span{position:absolute;width:10px;height:14px;border-radius:2px;opacity:0.95;transform-origin:center;animation:confFall linear forwards}
+  @keyframes confFall{from{transform:translateY(-10vh) rotate(0deg)}to{transform:translateY(110vh) rotate(540deg);opacity:1}}
+
+  /* small helpers */
+  .fadeIn{animation:fadeIn .6s ease both}
+  @keyframes fadeIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+
+</style>
+</head>
+<body>
+
+  <!-- PAGE 1: Curtains + Invitation -->
+  <div id="page1" class="page">
+    <div class="curtain left"></div>
+    <div class="curtain right"></div>
+    <div class="card">
+      <h2>🎬 Magical Rakhi Invitation</h2>
+      <input id="nameInput" placeholder="Enter your name" />
+      <div>
+        <button id="enterBtn">Enter</button>
+      </div>
+      <div id="errorMsg" class="error"></div>
+    </div>
+  </div>
+
+  <!-- PAGE 2: Golden Envelope -->
+  <div id="page2" class="page hidden">
+    <div style="text-align:center">
+      <div id="envelope" class="envelope"></div>
+      <div id="poemBox" class="poemBox hidden fadeIn" style="margin-top:20px">
+        <div style="font-style:italic">"Follow the sparkles, where Rakhis fall,<br>
+        Solve, click, and catch them all.<br>
+        Play with heart, and you will see,<br>
+        A surprise will come from Ishan to thee."</div>
+        <div style="margin-top:12px;text-align:center"><button id="toPage3" class="centerBtn">Play</button></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- PAGE 3: Catch-the-Rakhi Game -->
+  <div id="page3" class="page hidden">
+    <div class="game-wrap">
+      <div class="status" aria-live="polite" aria-atomic="true" role="region" aria-label="Game status">
+        <div class="statBox" id="score">🎀: 0/4 | 🌼: 0/4 | 🎁: 0/4</div>
+        <div class="statBox">Time: <span id="timeLeft">15</span>s</div>
+        <div class="meter" title="progress"><i id="meterFill"></i></div>
+      </div>
+      <div id="gameArea" class="game-area" aria-label="game area"></div>
+      <div style="text-align:center;margin-top:12px">
+        <button id="retryBtn" class="centerBtn hidden">Retry</button>
+      </div>
+      <div style="text-align:center;margin-top:14px;color:#fff;font-weight:700;user-select:none;">
+        Click exactly 5 times on each emoji without exceeding!
+      </div>
+    </div>
+  </div>
+
+  <!-- PAGE 4: Final Reveal -->
+  <div id="page4" class="page hidden">
+    <div class="finalCard fadeIn">
+      <div id="revealTitle" class="finalTitle"></div>
+      <div id="revealText" class="finalText"></div>
+      <div class="fromIshan" id="fromIshan">From Ishan</div>
+      <div style="margin-top:14px"><button id="restartBtn" class="centerBtn">Restart</button></div>
+    </div>
+    <div id="confetti" class="confetti"></div>
+  </div>
+
+<script>
+  /* ---------- data ---------- */
+  const allowedNames = ['siya','tanvi','chikki','cherry','samiksha','mansi','akshara','antara','bhagyashree','sakshu','Vaishnavi','samrudhi','soni','prisha','siddhi','rashi','gauri','ankita'];
+  let userName = '';
+
+  /* ---------- page1 logic ---------- */
+  const curtains = document.querySelectorAll('.curtain');
+  const nameInput = document.getElementById('nameInput');
+  const enterBtn = document.getElementById('enterBtn');
+  const errorMsg = document.getElementById('errorMsg');
+
+  enterBtn.addEventListener('click', ()=>{
+    const val = nameInput.value.trim().toLowerCase();
+    if(allowedNames.includes(val)){
+      userName = val.charAt(0).toUpperCase() + val.slice(1);
+      errorMsg.style.display='none';
+      // open curtains
+      curtains.forEach(c=>c.classList.add('open'));
+      setTimeout(()=>{
+        document.getElementById('page1').classList.add('hidden');
+        document.getElementById('page2').classList.remove('hidden');
+      },1400);
+    } else {
+      errorMsg.innerText = 'Sorry… this magical Rakhi journey is only for ishan"s most precious sisters 💖';
+      errorMsg.style.display = 'block';
+    }
+  });
+
+  /* ---------- page2 envelope ---------- */
+  const envelope = document.getElementById('envelope');
+  const poemBox = document.getElementById('poemBox');
+  const toPage3 = document.getElementById('toPage3');
+  envelope.addEventListener('click',()=>{
+    poemBox.classList.remove('hidden');
+  });
+  toPage3.addEventListener('click',()=>{
+    document.getElementById('page2').classList.add('hidden');
+    document.getElementById('page3').classList.remove('hidden');
+    startGame();
+  });
+
+  /* ---------- Game: Catch falling emojis ---------- */
+  const gameArea = document.getElementById('gameArea');
+  const scoreEl = document.getElementById('score');
+  const meterFill = document.getElementById('meterFill');
+  const timeLeftEl = document.getElementById('timeLeft');
+  const retryBtn = document.getElementById('retryBtn');
+
+  const rakhiEmojis = ['🎀', '🌼', '🎁']; // emojis to catch
+  const MAX_CLICKS = 5; // max clicks per emoji
+  const TIME_LIMIT = 20; // seconds
+
+  // Track clicks per emoji
+  let emojiClicks = {
+    '🎀': 0,
+    '🌼': 0,
+    '🎁': 0,
+  };
+
+  let spawnInterval = null;
+  let gameTimer = null;
+
+  function spawnRakhi(){
+    const r = document.createElement('div');
+    r.className = 'rakhi';
+    const randomEmoji = rakhiEmojis[Math.floor(Math.random() * rakhiEmojis.length)];
+    r.innerText = randomEmoji;
+    r.style.left = (Math.random() * 86) + '%';
+    r.style.fontSize = (28 + Math.random() * 18) + 'px';
+    r.style.top = '-8%';
+    const dur = 3 + Math.random() * 3; // duration 3-6s
+    r.style.animation = fallDown ${dur}s linear forwards;
+
+    // Click to catch
+    r.addEventListener('click', e => {
+      e.stopPropagation();
+      catchRakhi(r, randomEmoji);
+    });
+
+    // Remove after animation
+    r.addEventListener('animationend', () => { if (r.parentNode) r.remove(); });
+
+    gameArea.appendChild(r);
+  }
+
+  function catchRakhi(el, emoji){
+    // Increase clicked count for emoji
+    emojiClicks[emoji]++;
+
+    if(emojiClicks[emoji] > MAX_CLICKS){
+      alert(You clicked ${emoji} more than ${MAX_CLICKS} times! Game restarting.);
+      restartGame();
+      return;
+    }
+
+    // Animate pop
+    el.style.transition = 'transform 150ms ease, opacity 200ms ease';
+    el.style.transform = 'scale(1.6) rotate(12deg)';
+    el.style.opacity = '0';
+    setTimeout(() => { if(el.parentNode) el.remove(); }, 220);
+
+    updateScore();
+
+    // Check win condition
+    if(Object.values(emojiClicks).every(count => count === MAX_CLICKS)){
+      winGame();
+    }
+  }
+
+  function updateScore(){
+    // Show how many caught for each emoji
+    let displayText = rakhiEmojis.map(emoji => ${emoji}: ${emojiClicks[emoji]}/${MAX_CLICKS}).join(' | ');
+    scoreEl.innerText = displayText;
+
+    // Update progress meter by total progress of all emojis
+    const totalClicks = Object.values(emojiClicks).reduce((a,b) => a+b, 0);
+    const percent = Math.min(100, Math.round((totalClicks / (MAX_CLICKS * rakhiEmojis.length)) * 100));
+    meterFill.style.width = percent + '%';
+  }
+
+  function startGame(){
+    // Reset counters
+    emojiClicks = {
+      '🎀': 0,
+      '🌼': 0,
+      '🎁': 0,
+    };
+    updateScore();
+    retryBtn.classList.add('hidden');
+
+    // Spawn loop
+    spawnInterval = setInterval(spawnRakhi, 700);
+
+    // Spawn some immediately for fun
+    for(let i=0; i<3; i++) spawnRakhi();
+
+    // Timer reset
+    let timeLeft = TIME_LIMIT;
+    timeLeftEl.innerText = timeLeft;
+    clearInterval(gameTimer);
+    gameTimer = setInterval(() => {
+      timeLeft--;
+      timeLeftEl.innerText = timeLeft;
+      if(timeLeft <= 0){
+        endGame();
+      }
+    }, 1000);
+  }
+
+  function restartGame(){
+    clearInterval(spawnInterval);
+    spawnInterval = null;
+    clearInterval(gameTimer);
+    gameTimer = null;
+    gameArea.innerHTML = '';
+    startGame();
+  }
+
+  function endGame(){
+    clearInterval(spawnInterval);
+    spawnInterval = null;
+    clearInterval(gameTimer);
+    gameTimer = null;
+    retryBtn.classList.remove('hidden');
+    retryBtn.onclick = () => {
+      gameArea.innerHTML = '';
+      startGame();
+    };
+  }
+
+  function winGame(){
+    clearInterval(spawnInterval);
+    spawnInterval = null;
+    clearInterval(gameTimer);
+    gameTimer = null;
+
+    // Remove remaining emojis nicely
+    const remaining = gameArea.querySelectorAll('.rakhi');
+    remaining.forEach(n => {
+      n.style.transition='opacity .3s';
+      n.style.opacity='0';
+      setTimeout(() => n.remove(), 320);
+    });
+
+    setTimeout(() => {
+      document.getElementById('page3').classList.add('hidden');
+      document.getElementById('page4').classList.remove('hidden');
+      showFinalReveal();
+    }, 400);
+  }
+
+  /* ---------- final reveal ---------- */
+  const revealTitle = document.getElementById('revealTitle');
+  const revealText = document.getElementById('revealText');
+  const confettiEl = document.getElementById('confetti');
+
+  function showFinalReveal(){
+    revealTitle.innerText = 💖 Happy Raksha Bandhan, ${userName}! 💖;
+    revealText.innerText = `No matter how small or big you are, you are my forever sister, my true friend, and my strongest bond.
+I am always with you—in every moment, every smile, and every challenge.
+Thank you for being the shining light in my life.
+
+With all my love,
+Your brother, Ishan.`;
+    // animate 'From Ishan' slightly
+    const from = document.getElementById('fromIshan');
+    from.classList.add('fadeIn');
+    // confetti
+    launchConfetti();
+  }
+
+  function launchConfetti(){
+    confettiEl.innerHTML = '';
+    const colors = ['#ffd700','#ff8da1','#8be4ff','#ffda8d','#c8ffb3'];
+    for(let i=0;i<70;i++){
+      const c = document.createElement('span');
+      c.style.left = (Math.random()*100) + '%';
+      c.style.top = (-10 - Math.random()*20) + 'vh';
+      c.style.background = colors[Math.floor(Math.random()*colors.length)];
+      c.style.width = (6+Math.random()*8)+'px';
+      c.style.height = (8+Math.random()*10)+'px';
+      c.style.borderRadius = (Math.random()>0.5? '2px':'50%');
+      c.style.animationDuration = (3 + Math.random()*3) + 's';
+      c.style.transform = rotate(${Math.random()*360}deg);
+      confettiEl.appendChild(c);
+    }
+    // clear after some time
+    setTimeout(()=>{ confettiEl.innerHTML = ''; },8000);
+  }
+
+  /* ---------- restart ---------- */
+  document.getElementById('restartBtn').addEventListener('click', restartAll);
+  function restartAll(){
+    // reset UI
+    document.querySelectorAll('.curtain').forEach(c=>c.classList.remove('open'));
+    document.getElementById('page4').classList.add('hidden');
+    document.getElementById('page1').classList.remove('hidden');
+    gameArea.innerHTML='';
+    clearInterval(spawnInterval);
+    spawnInterval = null;
+    clearInterval(gameTimer);
+    gameTimer = null;
+    retryBtn.classList.add('hidden');
+  }
+</script>
+</body>
+</html>
