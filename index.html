@@ -99,8 +99,8 @@
   <div id="page3" class="page hidden">
     <div class="game-wrap">
       <div class="status" aria-live="polite" aria-atomic="true" role="region" aria-label="Game status">
-        <div class="statBox" id="score">🎀: 0/4 | 🌼: 0/4 | 🎁: 0/4</div>
-        <div class="statBox">Time: <span id="timeLeft">15</span>s</div>
+        <div class="statBox" id="score">🎀: 0/5 | 🌼: 0/5 | 🎁: 0/5</div>
+        <div class="statBox">Time: <span id="timeLeft">20</span>s</div>
         <div class="meter" title="progress"><i id="meterFill"></i></div>
       </div>
       <div id="gameArea" class="game-area" aria-label="game area"></div>
@@ -126,7 +126,7 @@
 
 <script>
   /* ---------- data ---------- */
-  const allowedNames = ['siya','tanvi','chikki','cherry','samiksha','mansi','akshara','antara','bhagyashree','sakshu','Vaishnavi','samrudhi','soni','prisha','siddhi','rashi','gauri','ankita'];
+  const allowedNames = ['siya','tanvi','chikki','cherry','samiksha','mansi','akshara','antara','bhagyashree','sakshu','vaishnavi','samrudhi','soni','prisha','siddhi','rashi','gauri','ankita'];
   let userName = '';
 
   /* ---------- page1 logic ---------- */
@@ -195,7 +195,7 @@
     r.style.fontSize = (28 + Math.random() * 18) + 'px';
     r.style.top = '-8%';
     const dur = 3 + Math.random() * 3; // duration 3-6s
-    r.style.animation = fallDown ${dur}s linear forwards;
+    r.style.animation = `fallDown ${dur}s linear forwards`;
 
     // Click to catch
     r.addEventListener('click', e => {
@@ -214,7 +214,7 @@
     emojiClicks[emoji]++;
 
     if(emojiClicks[emoji] > MAX_CLICKS){
-      alert(You clicked ${emoji} more than ${MAX_CLICKS} times! Game restarting.);
+      alert(`You clicked ${emoji} more than ${MAX_CLICKS} times! Game restarting.`);
       restartGame();
       return;
     }
@@ -235,7 +235,7 @@
 
   function updateScore(){
     // Show how many caught for each emoji
-    let displayText = rakhiEmojis.map(emoji => ${emoji}: ${emojiClicks[emoji]}/${MAX_CLICKS}).join(' | ');
+    let displayText = rakhiEmojis.map(emoji => `${emoji}: ${emojiClicks[emoji]}/${MAX_CLICKS}`).join(' | ');
     scoreEl.innerText = displayText;
 
     // Update progress meter by total progress of all emojis
@@ -321,7 +321,7 @@
   const confettiEl = document.getElementById('confetti');
 
   function showFinalReveal(){
-    revealTitle.innerText = 💖 Happy Raksha Bandhan, ${userName}! 💖;
+    revealTitle.innerText = `💖 Happy Raksha Bandhan, ${userName}! 💖`;
     revealText.innerText = `No matter how small or big you are, you are my forever sister, my true friend, and my strongest bond.
 I am always with you—in every moment, every smile, and every challenge.
 Thank you for being the shining light in my life.
@@ -329,45 +329,46 @@ Thank you for being the shining light in my life.
 With all my love,
 Your brother, Ishan.`;
     // animate 'From Ishan' slightly
-    const from = document.getElementById('fromIshan');
-    from.classList.add('fadeIn');
-    // confetti
-    launchConfetti();
+    const fromIshan = document.getElementById('fromIshan');
+    fromIshan.animate([{ transform: 'scale(1)' }, { transform: 'scale(1.1)' }, { transform: 'scale(1)' }], { duration: 2500, iterations: Infinity });
+
+    startConfetti();
   }
 
-  function launchConfetti(){
+  /* ---------- confetti ---------- */
+  function startConfetti(){
+    // clear old confetti
     confettiEl.innerHTML = '';
-    const colors = ['#ffd700','#ff8da1','#8be4ff','#ffda8d','#c8ffb3'];
-    for(let i=0;i<70;i++){
-      const c = document.createElement('span');
+    const colors = ['#ffd700','#ffc107','#ffa000','#ff8f00','#ff6f00','#ff5722'];
+
+    for(let i=0; i<120; i++){
+      let c = document.createElement('span');
+      c.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
       c.style.left = (Math.random()*100) + '%';
       c.style.top = (-10 - Math.random()*20) + 'vh';
-      c.style.background = colors[Math.floor(Math.random()*colors.length)];
-      c.style.width = (6+Math.random()*8)+'px';
-      c.style.height = (8+Math.random()*10)+'px';
-      c.style.borderRadius = (Math.random()>0.5? '2px':'50%');
-      c.style.animationDuration = (3 + Math.random()*3) + 's';
-      c.style.transform = rotate(${Math.random()*360}deg);
+      c.style.width = (5 + Math.random()*8) + 'px';
+      c.style.height = (10 + Math.random()*12) + 'px';
+      c.style.opacity = (0.6 + Math.random()*0.4).toFixed(2);
+      c.style.borderRadius = (Math.random()*50) + '%';
+      c.style.animationDuration = (3 + Math.random()*4) + 's';
+      c.style.animationDelay = (Math.random()*10) + 's';
+      c.style.transform = `rotate(${Math.random()*360}deg)`;
       confettiEl.appendChild(c);
     }
-    // clear after some time
-    setTimeout(()=>{ confettiEl.innerHTML = ''; },8000);
   }
 
-  /* ---------- restart ---------- */
-  document.getElementById('restartBtn').addEventListener('click', restartAll);
-  function restartAll(){
-    // reset UI
-    document.querySelectorAll('.curtain').forEach(c=>c.classList.remove('open'));
+  /* ---------- restart final ---------- */
+  const restartBtn = document.getElementById('restartBtn');
+  restartBtn.addEventListener('click', () => {
+    // reset everything and go back to start
+    confettiEl.innerHTML = '';
     document.getElementById('page4').classList.add('hidden');
     document.getElementById('page1').classList.remove('hidden');
-    gameArea.innerHTML='';
-    clearInterval(spawnInterval);
-    spawnInterval = null;
-    clearInterval(gameTimer);
-    gameTimer = null;
-    retryBtn.classList.add('hidden');
-  }
+    curtains.forEach(c=>c.classList.remove('open'));
+    nameInput.value = '';
+    errorMsg.style.display='none';
+  });
 </script>
+
 </body>
 </html>
